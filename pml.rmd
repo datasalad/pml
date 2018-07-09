@@ -54,7 +54,26 @@ training <- t[inTrain,]
 testing <- t[-inTrain,]
 ```
 
-##build random forest model
+## Rpart approch with PCA
+
+```{r cache=TRUE}
+set.seed(123321)
+fitTree <- train(classe ~ ., data = training, method = "rpart", preProcess = "pca")
+fitTree
+```
+
+
+## LDA approach
+
+```{r cache=TRUE}
+set.seed(123321)
+fitLda <- train(classe ~ ., data = training, method = "lda")
+fitLda
+
+```
+
+
+## Random forest approach
 
 ```{r cache=TRUE}
 set.seed(123321)
@@ -90,10 +109,7 @@ dim(tt)
 
 
 ```{r}
-predTest <- predict(fit, tt[,-54])
-predTest
-
-head(tt)
+predict(fit, tt[,-54])
 ```
 
 
