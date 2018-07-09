@@ -1,0 +1,106 @@
+---
+title: "pml"
+output: html_document
+---
+
+```{r setup, include=FALSE, cache=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(caret)
+
+setwd("~/Desktop/pml")
+csv <- read.csv("pml-training.csv", header = TRUE, na.strings = c("NA", "", "#DIV/0!"))
+
+## remove clolumns with missing values
+csv <- csv[, colSums(is.na(csv)) == 0]
+
+t <- tbl_df(csv)
+```
+
+
+## Raw dataset summary (training data)
+
+```{r}
+dim(t)
+```
+
+
+##Remove redundant columns:
+```{r}
+idx <- grepl("X|timestamp|new_window|user_name", names(t))
+names(t)[idx]
+
+t <- t[, !idx]
+dim(t)
+```
+
+
+Useful:
+
+```{r}
+names(t)
+
+```
+
+
+## split the original testing dataset into training and testing
+```{r echo=FALSE, message=FALSE}
+library(caret)
+inTrain <- createDataPartition(y = t$classe, p = 0.7)[[1]]
+
+training <- t[inTrain,]
+testing <- t[-inTrain,]
+```
+
+##build random forest model
+
+```{r cache=TRUE}
+set.seed(123321)
+fit <- train(classe ~ ., data = training, method = "rf", ntree = 100)
+```
+
+
+```{r}
+fit
+```
+
+
+##Predict
+
+```{r}
+pred <- predict(fit, testing[,-54])
+confusionMatrix(pred, testing$classe)
+```
+
+
+
+## Check on Test data
+
+```{r cache=TRUE}
+## read testing data
+theTestData <- read.csv("pml-testing.csv", header = TRUE, na.strings = c("NA", "", "#DIV/0!"))
+theTestData <- theTestData[, colSums(is.na(theTestData)) == 0]
+
+tt <- tbl_df(theTestData)
+tt <- tt[, !grepl("X|timestamp|new_window|user_name", names(tt))]
+dim(tt)
+```
+
+
+```{r}
+predTest <- predict(fit, tt[,-54])
+predTest
+
+head(tt)
+```
+
+
+
+
+
+
+
+
+
