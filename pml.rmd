@@ -54,7 +54,16 @@ training <- t[inTrain,]
 testing <- t[-inTrain,]
 ```
 
-## Rpart approch with PCA
+## Corr plot
+```{r cache=TRUE}
+library(corrplot)
+cor <- cor(testing[,-54])
+corrplot(cor, type = "lower", method = "square", cl.pos = "b", tl.cex=.6)
+```
+
+
+
+## Classification And Regression Tree approach with PCA
 
 ```{r cache=TRUE}
 set.seed(123321)
