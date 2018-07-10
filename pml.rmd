@@ -61,13 +61,26 @@ cor <- cor(testing[,-54])
 corrplot(cor, type = "lower", method = "square", cl.pos = "b", tl.cex=.6)
 ```
 
+Remove predictors with extremely high corellation (>= 0.9)
+```{r cache=TRUE}
+hc <- findCorrelation(cor, cutoff = 0.9, verbose = TRUE)
+training <- training[,-hc]
+```
+
+
+## Cross validation
+K-fold cross validation with k = 10 will be used
+
+```{r}
+fitCtrl <- trainControl(method = "cv", number = 10)
+```
 
 
 ## Classification And Regression Tree approach with PCA
 
 ```{r cache=TRUE}
 set.seed(123321)
-fitTree <- train(classe ~ ., data = training, method = "rpart", preProcess = "pca")
+fitTree <- train(classe ~ ., data = training, method = "rpart", preProcess = "pca", trControl = fitCtrl)
 fitTree
 ```
 
@@ -76,7 +89,7 @@ fitTree
 
 ```{r cache=TRUE}
 set.seed(123321)
-fitLda <- train(classe ~ ., data = training, method = "lda")
+fitLda <- train(classe ~ ., data = training, method = "lda", trControl = fitCtrl)
 fitLda
 
 ```
@@ -86,7 +99,7 @@ fitLda
 
 ```{r cache=TRUE}
 set.seed(123321)
-fit <- train(classe ~ ., data = training, method = "rf", ntree = 100)
+fit <- train(classe ~ ., data = training, method = "rf", ntree = 100, trControl = fitCtrl)
 ```
 
 
@@ -98,9 +111,11 @@ fit
 ##Predict
 
 ```{r}
+dim(testing)
 pred <- predict(fit, testing[,-54])
 confusionMatrix(pred, testing$classe)
 ```
+
 
 
 
