@@ -18,6 +18,8 @@ Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible t
 The goal of the project is to predict the manner in which they did the exercise (**classe** variable in the training set).
 This analysis will show that the prediction model based on Random Forests has the best accuracy. 
 
+The source code for this analysis is available here:
+https://github.com/datasalad/pml
 
 ## Dataset
 
