@@ -1,7 +1,42 @@
 ---
-title: "pml"
-output: html_document
+title: "Practical Machine Learning Course Project: Human Activity Recognition"
+author: "Sergii Sorokolat"
+date: "7/11/2018"
+output: 
+  html_document: 
+    df_print: kable
+    highlight: haddock
+    theme: united
 ---
+
+## Executive summary
+
+Human Activity Recognition - HAR - has emerged as a key research area in the last years and is gaining increasing attention by the pervasive computing research community, especially for the development of context-aware systems. 
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.  In this project, the goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways.
+
+The goal of the project is to predict the manner in which they did the exercise (**classe** variable in the training set).
+This analysis will show that the prediction model based on Random Forests has the best accuracy. 
+
+
+## Dataset
+
+The training data for this project are available here:
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here:
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes. Participants were supervised by an experienced weight lifter to make sure the execution complied to the manner they were supposed to simulate. The exercises were performed by six male participants aged between 20-28 years, with little weight lifting experience. We made sure that all participants could easily simulate the mistakes in a safe and controlled manner by using a relatively light dumbbell (1.25kg).
+
+
+
+Read more: http://groupware.les.inf.puc-rio.br/har#ixzz5KwJtoTWF
+
+
 
 ```{r setup, include=FALSE, cache=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -11,42 +46,45 @@ library(lubridate)
 library(caret)
 
 setwd("~/Desktop/pml")
+
+```
+
+
+## Reading and processing the data
+
+We're going to read the testing data and remove columns with missing values.
+```{r message=FALSE}
+library(tidyverse)
+library(caret)
+
+## read training data
 csv <- read.csv("pml-training.csv", header = TRUE, na.strings = c("NA", "", "#DIV/0!"))
 
 ## remove clolumns with missing values
 csv <- csv[, colSums(is.na(csv)) == 0]
 
+## define a tibble with the data
 t <- tbl_df(csv)
-```
-
-
-## Raw dataset summary (training data)
-
-```{r}
 dim(t)
 ```
 
-
-##Remove redundant columns:
+We also remove redundant columns:
 ```{r}
 idx <- grepl("X|timestamp|new_window|user_name", names(t))
-names(t)[idx]
-
 t <- t[, !idx]
-dim(t)
 ```
 
-
-Useful:
+List of predictors from the testing dataset:
 
 ```{r}
 names(t)
-
 ```
 
+## Modelling
 
-## split the original testing dataset into training and testing
-```{r echo=FALSE, message=FALSE}
+We split the original testing dataset into training (70%) and testing (30%) data. We'll take a look at the correlation plot of predictors and remove highly correlated ones. We then build 3 different prediction models (CART, LDA and Random Forests) and pick the best one based on the prediction accuracy.
+
+```{r echo=TRUE, message=FALSE}
 library(caret)
 inTrain <- createDataPartition(y = t$classe, p = 0.7)[[1]]
 
@@ -54,29 +92,29 @@ training <- t[inTrain,]
 testing <- t[-inTrain,]
 ```
 
-## Corr plot
+## Correlation plot
 ```{r cache=TRUE}
 library(corrplot)
 cor <- cor(testing[,-54])
 corrplot(cor, type = "lower", method = "square", cl.pos = "b", tl.cex=.6)
 ```
 
-Remove predictors with extremely high corellation (>= 0.9)
+Remove predictors with extremely high correlation (>= 0.9)
 ```{r cache=TRUE}
-hc <- findCorrelation(cor, cutoff = 0.9, verbose = TRUE)
+hc <- findCorrelation(cor, cutoff = 0.9, verbose = FALSE)
 training <- training[,-hc]
 ```
 
 
 ## Cross validation
-K-fold cross validation with k = 10 will be used
+K-fold cross validation with k = 10 will be used.
 
 ```{r}
 fitCtrl <- trainControl(method = "cv", number = 10)
 ```
 
 
-## Classification And Regression Tree approach with PCA
+### Classification And Regression Tree approach with PCA preprocessing
 
 ```{r cache=TRUE}
 set.seed(123321)
@@ -85,7 +123,7 @@ fitTree
 ```
 
 
-## LDA approach
+### LDA approach
 
 ```{r cache=TRUE}
 set.seed(123321)
@@ -95,7 +133,7 @@ fitLda
 ```
 
 
-## Random forest approach
+### Random forest approach
 
 ```{r cache=TRUE}
 set.seed(123321)
@@ -108,7 +146,7 @@ fit
 ```
 
 
-##Predict
+#### Predictions on random forest model
 
 ```{r}
 dim(testing)
@@ -116,10 +154,15 @@ pred <- predict(fit, testing[,-54])
 confusionMatrix(pred, testing$classe)
 ```
 
+## Final model and Expected Out of Sample error estimate
 
+Random Forest based model has Accuracy 0.9997, Kappa 0.9996 and OOB error estimate of 0.25% suggesting that our final model is doing a great job.
 
+```{r}
+fit$finalModel
+```
 
-## Check on Test data
+## Check the final model on testing data
 
 ```{r cache=TRUE}
 ## read testing data
@@ -131,6 +174,9 @@ tt <- tt[, !grepl("X|timestamp|new_window|user_name", names(tt))]
 dim(tt)
 ```
 
+## Conclusion
+
+We now predict the outcome using our final model on the testing dataset.
 
 ```{r}
 predict(fit, tt[,-54])
