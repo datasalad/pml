@@ -273,6 +273,13 @@ fitLda</code></pre></div>
 </div>
 <div id="random-forest-approach" class="section level3">
 <h3>Random forest approach</h3>
+<p>Random forests should be very useful for this type of problem (classification). The main idea behind this algorithm is the following:</p>
+<ol style="list-style-type: decimal">
+<li>Bootstrap samples</li>
+<li>At each split, bootstrap variables</li>
+<li>Grow multiple trees and tune</li>
+</ol>
+<p>Pros of this approach is accuracy. Cons are speed, interpretability and overfitting. We’re going to tune the algorithm by limiting the number of trees to 100.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">123321</span>)
 fit &lt;-<span class="st"> </span><span class="kw">train</span>(classe <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> training, <span class="dt">method =</span> <span class="st">&quot;rf&quot;</span>, <span class="dt">ntree =</span> <span class="dv">100</span>, <span class="dt">trControl =</span> fitCtrl)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit</code></pre></div>

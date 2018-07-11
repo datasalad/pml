@@ -136,6 +136,14 @@ fitLda
 
 
 ### Random forest approach
+Random forests should be very useful for this type of problem (classification). The main idea behind this algorithm is the following:
+
+1. Bootstrap samples 
+2. At each split, bootstrap variables
+3. Grow multiple trees and tune
+
+Pros of this approach is accuracy. Cons are speed, interpretability and overfitting.
+We're going to tune the algorithm by limiting the number of trees to 100.
 
 ```{r cache=TRUE}
 set.seed(123321)
