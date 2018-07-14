@@ -80,6 +80,8 @@ List of predictors from the testing dataset:
 
 ```{r}
 names(t)
+
+barplot(table(t$classe))
 ```
 
 ## Modelling
